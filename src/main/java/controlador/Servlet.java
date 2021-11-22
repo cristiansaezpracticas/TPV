@@ -5,7 +5,6 @@
 package controlador;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -29,14 +28,61 @@ public class Servlet extends HttpServlet {
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
      */
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    protected void processRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String op = "listar";
+        
+            if(request.getParameter("op")!=null){
+                op=request.getParameter("op");
+            }
+            
             if (op.equals("listar")) {
+                request.setAttribute("mensaje", "");
                 List<Productos> listaProductos=Crud.getProductos();
                 request.setAttribute("listado", listaProductos);
                 request.getRequestDispatcher("lista.jsp").forward(request, response);
             }
+            
+            if (op.equals("borrar")) {
+                int id = Integer.parseInt(request.getParameter("id"));
+                if (Crud.destroyProducto(id)>0){
+                    request.setAttribute("mensaje", "Producto con ID:" + id + " borrado.");
+                } else {
+                    request.setAttribute("mensaje", "Producto con ID:" + id + " no se ha podido borrar.");
+                }
+                List<Productos> listaProductos=Crud.getProductos();
+                request.setAttribute("listado", listaProductos);
+                request.getRequestDispatcher("lista.jsp").forward(request, response);
+            }
+            
+            if (op.equals("actualizar")) {
+                int id = Integer.parseInt(request.getParameter("id"));
+                Productos miProducto = Crud.getProducto(id);
+                request.setAttribute("producto", miProducto);
+                request.getRequestDispatcher("actualizar.jsp").forward(request, response);
+            }
+            
+            if (op.equals("actualizardatos")) {
+                int id = Integer.parseInt(request.getParameter("id"));
+                String nombre = request.getParameter("nombre");
+                String categoria = request.getParameter("categoria");
+                String imagen = request.getParameter("imagen");
+                float precio = Float.parseFloat(request.getParameter("precio"));
+                Productos p = new Productos();
+                p.setId(id);
+                p.setNombre(nombre);
+                p.setPrecio(precio);
+                p.setCategoria(categoria);
+                p.setImagen(imagen);
+                Crud.actualizaProducto(p);
+                if(Crud.actualizaProducto(p)>0){
+                    request.setAttribute("mensaje", "Producto con id " +id+ " actualizado");
+                }else{
+                    request.setAttribute("mensaje", "No se ha actualizaro ningun producto");
+                }
+                request.setAttribute("producto", p);
+                request.getRequestDispatcher("actualizar.jsp").forward(request, response);
+            }
+            
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">

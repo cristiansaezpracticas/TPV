@@ -16,6 +16,34 @@ import javax.persistence.Query;
  */
 public class Crud {
     
+    public static int actualizaProducto(Productos miProducto) {
+        EntityManagerFactory factory = Persistence.createEntityManagerFactory("my_persistence_unit");
+        EntityManager manager = factory.createEntityManager();
+        String sql = "UPDATE Productos p SET p.nombre = :nombre, p.imagen = :imagen, p.categoria = :categoria, p.precio = :precio "
+                + "WHERE p.id = :id";
+        Query q = manager.createQuery(sql,Productos.class);
+        q.setParameter("categoria", miProducto.getCategoria());
+        q.setParameter("nombre", miProducto.getNombre());
+        q.setParameter("imagen", miProducto.getImagen());
+        q.setParameter("precio", miProducto.getPrecio());
+        q.setParameter("id", miProducto.getId());
+        manager.getTransaction().begin();
+        int filasAfectadas = q.executeUpdate();
+        manager.getTransaction().commit();
+
+        return filasAfectadas; 
+    }
+    
+    public static Productos getProducto(int id) {
+        EntityManagerFactory factory = Persistence.createEntityManagerFactory("my_persistence_unit");
+        EntityManager manager = factory.createEntityManager();
+        String sql = "SELECT p FROM Productos p WHERE p.id=" + id;
+        Query q = manager.createQuery(sql,Productos.class); //método para consultas en JPQL
+        Productos productosBD = ( Productos )q.getSingleResult();
+        
+        return productosBD;
+    }
+    
     public static List<Productos> getProductos() {
         EntityManagerFactory factory = Persistence.createEntityManagerFactory("my_persistence_unit");
         EntityManager manager = factory.createEntityManager();
@@ -25,5 +53,17 @@ public class Crud {
 
         return productosBD;        
     }
-
+    
+    public static int destroyProducto(int id) {
+        EntityManagerFactory factory = Persistence.createEntityManagerFactory("my_persistence_unit");
+        EntityManager manager = factory.createEntityManager();
+        String sql = "DELETE from Productos p WHERE p.id = " + id;
+        Query q = manager.createQuery(sql);
+        manager.getTransaction().begin();
+        int filasAfectadas = q.executeUpdate(); //para las consultas de modif. datos se usa el método executeUpdate
+        manager.getTransaction().commit();
+        
+        return filasAfectadas;
+    }
+    
 }
